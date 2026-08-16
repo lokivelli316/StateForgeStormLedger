@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "title": "Jamie Rowan Weather Station Example",
+  "description": "Fictional example only",
+  "accounts": [
+    { "id": "acct-jamie", "type": "human", "name": "Jamie Rowan", "role": "final authority" },
+    { "id": "acct-project", "type": "project", "name": "Backyard Weather Station", "role": "primary work stream" },
+    { "id": "acct-assistant", "type": "model", "name": "Assistant A", "role": "implementation assistance" }
+  ],
+  "assets": [
+    { "id": "asset-notes", "name": "Research Notes.docx", "type": "document", "state": "REGISTERED", "custody": "drive" },
+    { "id": "asset-tests", "name": "Sensor Tests.xlsx", "type": "dataset", "state": "REGISTERED", "custody": "drive" },
+    { "id": "asset-firmware", "name": "firmware/", "type": "code", "state": "REGISTERED", "custody": "github" },
+    { "id": "asset-cal", "name": "calibration.py", "type": "code", "state": "VERIFIED", "custody": "local" }
+  ],
+  "transactions": [
+    { "id": "tx-1", "type": "BUILD", "summary": "Initial calibration script created with assistant help", "at": "2026-08-10T14:00:00Z" },
+    { "id": "tx-2", "type": "CHALLENGE", "summary": "Unit test failed on temperature conversion edge case", "at": "2026-08-10T15:20:00Z" },
+    { "id": "tx-3", "type": "CORRECTION", "summary": "Fixed conversion and added boundary test", "at": "2026-08-10T16:05:00Z" },
+    { "id": "tx-4", "type": "VERIFICATION", "summary": "Independent check passed", "at": "2026-08-10T16:40:00Z" }
+  ],
+  "meta": {
+    "privacy": "fictional example only"
+  }
+}

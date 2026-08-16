@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>State Forge Storm Ledger</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #1a1d24;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #9aa3b2;
+    --accent: #6ea8fe;
+    --ok: #3dd68c;
+    --warn: #f5a524;
+    --bad: #f76c6c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+  }
+  header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  h1 { font-size: 1.15rem; margin: 0; font-weight: 600; }
+  .muted { color: var(--muted); font-size: 0.9rem; }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  nav button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  nav button.active {
+    background: var(--accent);
+    color: #0b1020;
+    border-color: var(--accent);
+  }
+  main { padding: 1.25rem; max-width: 1100px; margin: 0 auto; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+  input, select, textarea {
+    background: #12151b;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.45rem 0.6rem;
+    border-radius: 6px;
+    font: inherit;
+  }
+  textarea { width: 100%; min-height: 70px; }
+  button.primary {
+    background: var(--accent);
+    color: #0b1020;
+    border: none;
+    padding: 0.45rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button.ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  .tag {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+  }
+  .tag.ok { color: var(--ok); border-color: var(--ok); }
+  .tag.warn { color: var(--warn); border-color: var(--warn); }
+  .tag.bad { color: var(--bad); border-color: var(--bad); }
+  .hidden { display: none; }
+  .stack { display: grid; gap: 0.6rem; }
+  .small { font-size: 0.85rem; }
+  footer {
+    padding: 1rem 1.25rem 2rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>State Forge Storm Ledger</h1>
+    <div class="muted">local-first provenance ledger · no server required</div>
+  </div>
+  <div class="row">
+    <button class="ghost" onclick="exportJSON()">Export JSON</button>
+    <button class="ghost" onclick="exportHTML()">Export Snapshot HTML</button>
+    <button class="ghost" onclick="resetToStarter()">Reset to Starter</button>
+  </div>
+</header>
+
+<nav id="nav">
+  <button class="active" data-view="start">Start Here</button>
+  <button data-view="assets">Asset Registry</button>
+  <button data-view="transactions">Transaction Journal</button>
+  <button data-view="accounts">Provenance Accounts</button>
+  <button data-view="recon">Reconciliation</button>
+  <button data-view="trial">Trial Balance</button>
+</nav>
+
+<main>
+  <section id="view-start" class="panel">
+    <h2>Start Here</h2>
+    <div class="stack small">
+      <p>This is a standalone browser ledger. Everything stays in your browser unless you export it.</p>
+      <ol>
+        <li>Create accounts for yourself, your project, and any assistant that materially acts.</li>
+        <li>Register existing local files as assets (they enter as <code>LOCAL_PENDING_IMPORT</code>).</li>
+        <li>Post transactions for meaningful changes: BUILD, CHALLENGE, VERIFICATION, CORRECTION, MERGE, PUBLICATION, ROLLBACK.</li>
+        <li>Run Reconciliation. It only diagnoses — it never auto-repairs.</li>
+        <li>Review Trial Balance, then export a JSON or HTML snapshot for durable custody.</li>
+      </ol>
+      <p><strong>Rules that never change:</strong> VERIFIED ≠ DISCOVERED. PUBLISHED ≠ VERIFIED. Model agreement is not proof. FAIL does not erase the claim. SUPERSEDED does not erase the predecessor. UNKNOWN cannot silently become PASS.</p>
+      <p>Read <code>LEDGER_CONTRACT.md</code> before letting any assistant touch your records.</p>
+    </div>
+  </section>
+
+  <section id="view-assets" class="panel hidden">
+    <h2>Asset Registry</h2>
+    <div class="row">
+      <input id="asset-name" placeholder="Asset name" style="min-width:220px">
+      <select id="asset-type">
+        <option value="document">document</option>
+        <option value="code">code</option>
+        <option value="dataset">dataset</option>
+        <option value="build">build</option>
+        <option value="publication">publication</option>
+        <option value="other">other</option>
+      </select>
+      <select id="asset-state">
+        <option value="LOCAL_PENDING_IMPORT">LOCAL_PENDING_IMPORT</option>
+        <option value="REGISTERED">REGISTERED</option>
+        <option value="VERIFIED">VERIFIED</option>
+        <option value="SUPERSEDED">SUPERSEDED</option>
+        <option value="UNKNOWN">UNKNOWN</option>
+      </select>
+      <button class="primary" onclick="addAsset()">Add Asset</button>
+    </div>
+    <div id="asset-list"></div>
+  </section>
+
+  <section id="view-transactions" class="panel hidden">
+    <h2>Transaction Journal</h2>
+    <div class="stack">
+      <div class="row">
+        <select id="tx-type">
+          <option>BUILD</option>
+          <option>CHALLENGE</option>
+          <option>VERIFICATION</option>
+          <option>CORRECTION</option>
+          <option>MERGE</option>
+          <option>PUBLICATION</option>
+          <option>ROLLBACK</option>
+          <option>IMPORT</option>
+          <option>EXPORT</option>
+          <option>COPY</option>
+        </select>
+        <input id="tx-summary" placeholder="Summary" style="min-width:280px">
+        <button class="primary" onclick="addTransaction()">Post Transaction</button>
+      </div>
+      <textarea id="tx-notes" placeholder="Optional notes / evidence"></textarea>
+    </div>
+    <div id="tx-list" style="margin-top:1rem"></div>
+  </section>
+
+  <section id="view-accounts" class="panel hidden">
+    <h2>Provenance Accounts</h2>
+    <div class="row">
+      <input id="acct-name" placeholder="Account name" style="min-width:200px">
+      <select id="acct-type">
+        <option value="human">human</option>
+        <option value="project">project</option>
+        <option value="model">model</option>
+        <option value="agent">agent</option>
+        <option value="automation">automation</option>
+        <option value="repository">repository</option>
+      </select>
+      <button class="primary" onclick="addAccount()">Add Account</button>
+    </div>
+    <div id="acct-list"></div>
+  </section>
+
+  <section id="view-recon" class="panel hidden">
+    <h2>Reconciliation</h2>
+    <p class="muted small">Read-only exception detection. Nothing is auto-repaired.</p>
+    <button class="primary" onclick="runRecon()">Run Reconciliation</button>
+    <div id="recon-results" style="margin-top:1rem"></div>
+  </section>
+
+  <section id="view-trial" class="panel hidden">
+    <h2>Trial Balance</h2>
+    <button class="primary" onclick="runTrial()">Compute Trial Balance</button>
+    <div id="trial-results" style="margin-top:1rem"></div>
+  </section>
+</main>
+
+<footer>
+  Local-first. No network required for core use. Export for durable custody.
+  This public starter contains only generic data.
+</footer>
+
+<script>
+const STORAGE_KEY = "sfsledger_v1";
+
+const defaultLedger = {
+  version: "1.0.0",
+  title: "Working Ledger",
+  accounts: [
+    { id: "acct-human-operator", type: "human", name: "Human Operator", role: "final authority" },
+    { id: "acct-project-alpha", type: "project", name: "Project Alpha", role: "primary work stream" },
+    { id: "acct-assistant-a", type: "model", name: "Assistant A", role: "implementation assistance" }
+  ],
+  assets: [
+    { id: "asset-readme", name: "README.md", type: "document", state: "LOCAL_PENDING_IMPORT", custody: "local", notes: "Generic starter document" }
+  ],
+  transactions: [],
+  infrastructure: [],
+  release_status: [],
+  adjusting_entries: [],
+  meta: { privacy: "generic starter data only" }
+};
+
+let ledger = loadLedger();
+
+function uid(prefix) {
+  return prefix + "-" + Math.random().toString(36).slice(2, 9);
+}
+
+function loadLedger() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return structuredClone(defaultLedger);
+}
+
+function saveLedger() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ledger));
+  renderAll();
+}
+
+function resetToStarter() {
+  if (!confirm("Reset working ledger to clean starter? This clears current browser state.")) return;
+  ledger = structuredClone(defaultLedger);
+  saveLedger();
+}
+
+function switchView(name) {
+  document.querySelectorAll("main > section").forEach(s => s.classList.add("hidden"));
+  document.getElementById("view-" + name).classList.remove("hidden");
+  document.querySelectorAll("nav button").forEach(b => {
+    b.classList.toggle("active", b.dataset.view === name);
+  });
+}
+
+document.getElementById("nav").addEventListener("click", (e) => {
+  if (e.target.matches("button[data-view]")) switchView(e.target.dataset.view);
+});
+
+function addAsset() {
+  const name = document.getElementById("asset-name").value.trim();
+  if (!name) return alert("Asset name required");
+  ledger.assets.push({
+    id: uid("asset"),
+    name,
+    type: document.getElementById("asset-type").value,
+    state: document.getElementById("asset-state").value,
+    custody: "local",
+    notes: ""
+  });
+  document.getElementById("asset-name").value = "";
+  saveLedger();
+}
+
+function addTransaction() {
+  const summary = document.getElementById("tx-summary").value.trim();
+  if (!summary) return alert("Summary required");
+  ledger.transactions.push({
+    id: uid("tx"),
+    type: document.getElementById("tx-type").value,
+    summary,
+    notes: document.getElementById("tx-notes").value.trim(),
+    at: new Date().toISOString()
+  });
+  document.getElementById("tx-summary").value = "";
+  document.getElementById("tx-notes").value = "";
+  saveLedger();
+}
+
+function addAccount() {
+  const name = document.getElementById("acct-name").value.trim();
+  if (!name) return alert("Account name required");
+  ledger.accounts.push({
+    id: uid("acct"),
+    type: document.getElementById("acct-type").value,
+    name,
+    role: ""
+  });
+  document.getElementById("acct-name").value = "";
+  saveLedger();
+}
+
+function renderAssets() {
+  const el = document.getElementById("asset-list");
+  if (!ledger.assets.length) {
+    el.innerHTML = "<p class='muted'>No assets yet.</p>";
+    return;
+  }
+  el.innerHTML = `<table><thead><tr><th>Name</th><th>Type</th><th>State</th><th>Custody</th></tr></thead><tbody>` +
+    ledger.assets.map(a => `<tr>
+      <td>${escapeHtml(a.name)}</td>
+      <td>${escapeHtml(a.type)}</td>
+      <td><span class="tag">${escapeHtml(a.state)}</span></td>
+      <td>${escapeHtml(a.custody || "")}</td>
+    </tr>`).join("") + `</tbody></table>`;
+}
+
+function renderTransactions() {
+  const el = document.getElementById("tx-list");
+  if (!ledger.transactions.length) {
+    el.innerHTML = "<p class='muted'>No transactions posted yet.</p>";
+    return;
+  }
+  const rows = [...ledger.transactions].reverse().map(t => `<tr>
+    <td class="small">${escapeHtml(t.at || "")}</td>
+    <td><span class="tag">${escapeHtml(t.type)}</span></td>
+    <td>${escapeHtml(t.summary)}</td>
+    <td class="small">${escapeHtml(t.notes || "")}</td>
+  </tr>`).join("");
+  el.innerHTML = `<table><thead><tr><th>When</th><th>Type</th><th>Summary</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderAccounts() {
+  const el = document.getElementById("acct-list");
+  el.innerHTML = `<table><thead><tr><th>Name</th><th>Type</th><th>Role</th></tr></thead><tbody>` +
+    ledger.accounts.map(a => `<tr>
+      <td>${escapeHtml(a.name)}</td>
+      <td>${escapeHtml(a.type)}</td>
+      <td>${escapeHtml(a.role || "")}</td>
+    </tr>`).join("") + `</tbody></table>`;
+}
+
+function runRecon() {
+  const findings = [];
+  const pending = ledger.assets.filter(a => a.state === "LOCAL_PENDING_IMPORT");
+  if (pending.length) {
+    findings.push({ level: "warn", text: `${pending.length} asset(s) still LOCAL_PENDING_IMPORT. This is legitimate inventory, not an automatic defect.` });
+  }
+  if (!ledger.transactions.length) {
+    findings.push({ level: "warn", text: "No transactions posted yet. Current state has limited historical explanation." });
+  }
+  const hasHuman = ledger.accounts.some(a => a.type === "human");
+  if (!hasHuman) {
+    findings.push({ level: "bad", text: "No human account recorded. Final authority actor is missing." });
+  }
+  if (!findings.length) {
+    findings.push({ level: "ok", text: "No material exceptions detected under current simple rules." });
+  }
+  document.getElementById("recon-results").innerHTML = findings.map(f =>
+    `<div class="panel" style="margin:0.4rem 0"><span class="tag ${f.level}">${f.level}</span> ${escapeHtml(f.text)}</div>`
+  ).join("");
+}
+
+function runTrial() {
+  let classification = "BALANCED";
+  const notes = [];
+  const pending = ledger.assets.filter(a => a.state === "LOCAL_PENDING_IMPORT").length;
+  if (pending > 0) {
+    classification = "BALANCED_WITH_ADJUSTING_ENTRIES_REQUIRED";
+    notes.push("Pending-import assets remain open.");
+  }
+  if (!ledger.transactions.length) {
+    classification = "MATERIALLY_UNRECONCILED";
+    notes.push("No transaction history to explain current state.");
+  }
+  document.getElementById("trial-results").innerHTML = `
+    <div class="panel">
+      <div><strong>Classification:</strong> <span class="tag">${classification}</span></div>
+      <div class="small muted" style="margin-top:0.5rem">${notes.map(escapeHtml).join(" ") || "No additional notes."}</div>
+      <div class="small muted" style="margin-top:0.5rem">Diagnostic only. Not a truth score.</div>
+    </div>`;
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(ledger, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ledger-export.json";
+  a.click();
+}
+
+function exportHTML() {
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Ledger Snapshot</title></head><body>
+  <h1>State Forge Storm Ledger Snapshot</h1>
+  <p>Exported: ${new Date().toISOString()}</p>
+  <pre>${escapeHtml(JSON.stringify(ledger, null, 2))}</pre>
+  </body></html>`;
+  const blob = new Blob([html], { type: "text/html" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ledger-snapshot.html";
+  a.click();
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function renderAll() {
+  renderAssets();
+  renderTransactions();
+  renderAccounts();
+}
+
+renderAll();
+</script>
+</body>
+</html>

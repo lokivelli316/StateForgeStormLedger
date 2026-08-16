@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "title": "Clean Starter Ledger",
+  "created": "2026-08-16T00:00:00Z",
+  "description": "Generic seed with no personal or private data. Replace or extend with your own projects.",
+  "accounts": [
+    {
+      "id": "acct-human-operator",
+      "type": "human",
+      "name": "Human Operator",
+      "role": "final authority"
+    },
+    {
+      "id": "acct-project-alpha",
+      "type": "project",
+      "name": "Project Alpha",
+      "role": "primary work stream"
+    },
+    {
+      "id": "acct-assistant-a",
+      "type": "model",
+      "name": "Assistant A",
+      "role": "implementation assistance"
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-readme",
+      "name": "README.md",
+      "type": "document",
+      "state": "LOCAL_PENDING_IMPORT",
+      "custody": "local",
+      "notes": "Generic project description. No private content."
+    }
+  ],
+  "transactions": [],
+  "infrastructure": [],
+  "release_status": [],
+  "adjusting_entries": [],
+  "meta": {
+    "source": "public-starter",
+    "privacy": "contains only fictional/generic data"
+  }
+}
