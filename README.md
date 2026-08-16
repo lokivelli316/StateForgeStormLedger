@@ -22,12 +22,11 @@ A failed test can balance. An unresolved question can balance. A rejected claim 
 1. Open `index.html`.
 2. Read **Start Here**.
 3. Create accounts for yourself, your project, and any model/agent/tool that materially acts.
-4. Register existing local files. They enter as `LOCAL_PENDING_IMPORT`; the app hashes the bytes in your browser and does not upload them.
+4. Register existing local files. They enter as `LOCAL_PENDING_IMPORT`; the app does not upload them.
 5. Post transactions for meaningful changes such as `BUILD`, `CHALLENGE`, `VERIFICATION`, `CORRECTION`, `MERGE`, `PUBLICATION`, or `ROLLBACK`.
-6. Add reusable scripts, validators, dashboards, automations, routers, and launchers as **Infrastructure Assets**.
-7. Run **Reconciliation**. It reports exceptions but never repairs them automatically.
-8. Review **Trial Balance**.
-9. Export JSON or a new self-contained HTML snapshot for a milestone or weekly close.
+6. Run **Reconciliation**. It reports exceptions but never repairs them automatically.
+7. Review **Trial Balance**.
+8. Export JSON or a standalone HTML snapshot for durable custody.
 
 ## The books
 
@@ -35,12 +34,9 @@ A failed test can balance. An unresolved question can balance. A rejected claim 
 |---|---|
 | Asset Registry | Durable things that exist: files, datasets, code, builds, frozen versions, publications, local inventory |
 | Transaction Journal | Meaningful state changes and custody moves |
-| Provenance Accounts | Humans, models, agents, automations, projects, repositories, review stages, publication boundaries, evidence classes |
-| Infrastructure Assets | Reusable workflow machinery and its lifecycle |
-| Release Status | Claim/thesis state separated from publication/deployment state |
+| Provenance Accounts | Humans, models, agents, automations, projects, repositories |
 | Reconciliation | Read-only exception detection |
 | Trial Balance | Whether the current state reconciles under the recorded history |
-| Adjusting Entries | Proposed corrections/reclassifications that remain separate until explicitly posted |
 
 ## Important rules
 
@@ -61,41 +57,22 @@ A failed test can balance. An unresolved question can balance. A rejected claim 
 
 `LOCAL_PENDING_IMPORT` is a legitimate inventory state for work that exists locally but has not yet been posted into Git, Drive, a publication system, or another custody store.
 
-Registering a local file:
-
-- computes a SHA-256 hash in the browser;
-- records file size and local path/name;
-- does **not** upload the file;
-- does **not** infer the original creation date;
-- does **not** claim the file exists anywhere else.
-
-When the file is later uploaded or committed, record that as an `IMPORT`, `EXPORT`, `COPY`, `MIRROR`, or other explicit custody transaction.
-
-## Trial Balance states
-
-- `BALANCED`
-- `BALANCED_WITH_ADJUSTING_ENTRIES_REQUIRED`
-- `MATERIALLY_UNRECONCILED`
-- `UNRECONCILABLE_FROM_AVAILABLE_RECORD`
-
-The result is diagnostic, not a truth score.
-
-## Persistence
-
-The app stores the working state in browser `localStorage` when available. For durable custody, export one or both of:
-
-- JSON — machine-readable ledger.
-- Standalone HTML — the application plus the current ledger snapshot baked into one file.
-
-For stronger history, store milestone/weekly snapshots in Git or another independent custody system.
-
 ## Files in this repository
 
-- `index.html` — self-contained application.
-- `starter-ledger.json` — clean generic seed ledger.
-- `ARCHITECTURE.md` — data model, invariants, reconciliation rules, and extension guidance.
-- `EXAMPLE_WORKFLOW.md` — a small worked example showing how a normal person can post a project without accounting jargon.
+- `index.html` — self-contained application
+- `starter-ledger.json` — clean generic seed ledger
+- `LEDGER_CONTRACT.md` — portable rules to give any assistant
+- `PRIVACY_AND_SECRETS.md` — hard privacy boundary
+- `examples/jamie-weather-station/` — fictional worked example
+- `docs/superpowers/specs/2026-08-15-public-replication-kit-design.md` — original design intent
 
 ## Privacy
 
-The starter application contains no personal project inventory or private manuscript data. All browser operations are local unless the user separately chooses to move exported files somewhere else.
+This public kit contains only generic and fictional data.
+It is designed so another person can take the method without inheriting any private history of the original operator.
+
+See `PRIVACY_AND_SECRETS.md`.
+
+## Design principle
+
+Leave the tool. Not the monument.
